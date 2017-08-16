@@ -32,10 +32,12 @@
 # Binaries we want to pick up from the actual build
 BINARY ?= docker-volume-vsphere
 VFILE_BINARY := vfile
+CODECOV_BINARY := vdvs-instrumented
 
 # Dockerfile templates
 DOCKERFILE ?= Dockerfile.vmdk
 VFILE_DOCKERFILE := Dockerfile.vfile
+CODECOV_DOCKERFILE := Dockerfile.codecov
 
 # Network Type
 NETWORK ?=
@@ -65,7 +67,8 @@ all: info plugin push
 vfile-all: vfile-info vfile-plugin vfile-push
 
 # unconditionally run those
-.PHONY: all clean info plugin vfile-all vfile-info vfile-plugin vfile-push
+.PHONY: all clean info plugin vfile-all vfile-info vfile-plugin vfile-push codecov-info codecov-plugin codecov-plugin-push
+codecov-all: codecov-info codecov-plugin codecov-plugin-push
 
 info:
 	@echo Using the following config:
@@ -73,6 +76,8 @@ info:
 	@echo PLUGIN_NAME $(PLUGIN_NAME):$(PLUGIN_TAG)
 vfile-info:
 	PLUGIN_NAME=$(VFILE_PLUGIN_NAME) $(MAKE) info
+codecov-info:
+	PLUGIN_NAME=$(CODECOV_PLUGIN_NAME) $(MAKE) info
 
 clean:
 	@echo "=== Cleaning work files, images and plugin(s)..."
@@ -85,6 +90,8 @@ clean:
 	-docker rmi $(TMP_IMAGE)
 vfile-clean:
 	PLUGIN_NAME=$(VFILE_PLUGIN_NAME) BINARY=$(VFILE_BINARY) $(MAKE) clean
+codecov-clean:
+	PLUGIN_NAME=$(CODECOV_PLUGIN_NAME) BINARY=$(CODECOV_BINARY) $(MAKE) clean
 
 plugin: clean
 	@echo "== building Docker image, unpacking to ./rootfs and creating plugin..."
@@ -100,6 +107,8 @@ plugin: clean
 	docker plugin create $(PLUGIN_NAME):$(PLUGIN_TAG) $(TMP_LOC)
 vfile-plugin: vfile-clean
 	NAME=$(VFILE_NAME) PLUGIN_NAME=$(VFILE_PLUGIN_NAME) BINARY=$(VFILE_BINARY) DOCKERFILE=$(VFILE_DOCKERFILE) NETWORK=$(VFILE_NETWORK) SOCKTYPE=$(VFILE_SOCKTYPE) MOUNTPOINT=$(VFILE_MOUNTPOINT) $(MAKE) plugin
+codecov-plugin: codecov-clean
+	PLUGIN_NAME=$(CODECOV_PLUGIN_NAME) BINARY=$(CODECOV_BINARY) DOCKERFILE=$(CODECOV_DOCKERFILE) $(MAKE) plugin
 
 push:
 	@echo Pushing $(PLUGIN_NAME):$(PLUGIN_TAG)  to dockerhub.io...
@@ -107,3 +116,5 @@ push:
 			echo 'Please make sure the plugin is built ("make clean plugin") and you have logged in to docker hub first ("docker login -u $(DOCKER_HUB_REPO)")'
 vfile-push:
 	PLUGIN_NAME=$(VFILE_PLUGIN_NAME) $(MAKE) push
+codecov-plugin-push:
+	PLUGIN_NAME=$(CODECOV_PLUGIN_NAME) $(MAKE) push

@@ -63,6 +63,11 @@
 		"name": "VFILE_TIMEOUT_IN_SECOND",
 		"description": "Timeout value in second used by vFILE plugin",
 		"value": "",
+	},
+	{
+		"name": "-test.coverprofile",
+		"description": "Client protocol version used in test",
+		"value": "/tmp/neal",
 		"Settable": [ "value"]
 	}
 	]
